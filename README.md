@@ -1,2 +1,0 @@
-# canvaser
- Canvas simple projects
