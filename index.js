@@ -19,7 +19,7 @@ class Boundary {
   }
 
   draw() {
-    c.fillStyle = 'red'
+    c.fillStyle = 'rgba(255, 0, 0, 0.0)'
     c.fillRect(this.position.x, this.position.y, this.width, this.height)
   }
 }
@@ -27,7 +27,7 @@ class Boundary {
 const boundaries = []
 const offset = {
   x: -1050,
-  y: -800,
+  y: -850,
 }
 
 collisionsMap.forEach((row, i) => {
@@ -130,6 +130,7 @@ function rectangularCollision({ rectangle1, rectangle2 }) {
     rectangle1.position.y + rectangle1.height >= rectangle2.position.y
   )
 }
+
 function animate() {
   window.requestAnimationFrame(animate)
   background.draw()
@@ -138,7 +139,7 @@ function animate() {
     boundary.draw()
   })
   let moving = true
-  if (keys.w.pressed && lastKey === 'w') {
+  const collisionOnMove = (offsetX, offsetY) => {
     for (let i = 0; i < boundaries.length; i++) {
       const boundary = boundaries[i]
       if (
@@ -147,8 +148,8 @@ function animate() {
           rectangle2: {
             ...boundary,
             position: {
-              x: boundary.position.x,
-              y: boundary.position.y,
+              x: boundary.position.x + offsetX,
+              y: boundary.position.y + offsetY,
             },
           },
         })
@@ -158,13 +159,21 @@ function animate() {
         break
       }
     }
+  }
+
+  if (keys.w.pressed && lastKey === 'w') {
+    collisionOnMove(0, 3)
     if (moving) movables.forEach((mov) => (mov.position.y += 3))
-  } else if (keys.s.pressed && lastKey === 's')
-    movables.forEach((mov) => (mov.position.y -= 3))
-  else if (keys.a.pressed && lastKey === 'a')
-    movables.forEach((mov) => (mov.position.x += 3))
-  else if (keys.d.pressed && lastKey === 'd')
-    movables.forEach((mov) => (mov.position.x -= 3))
+  } else if (keys.s.pressed && lastKey === 's') {
+    collisionOnMove(0, -3)
+    if (moving) movables.forEach((mov) => (mov.position.y -= 3))
+  } else if (keys.a.pressed && lastKey === 'a') {
+    collisionOnMove(3, 0)
+    if (moving) movables.forEach((mov) => (mov.position.x += 3))
+  } else if (keys.d.pressed && lastKey === 'd') {
+    collisionOnMove(-3, 0)
+    if (moving) movables.forEach((mov) => (mov.position.x -= 3))
+  }
 }
 animate()
 
