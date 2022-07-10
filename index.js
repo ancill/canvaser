@@ -9,21 +9,6 @@ for (let i = 0; i < collisions.length; i += 70) {
   collisionsMap.push(collisions.slice(i, 70 + i))
 }
 
-class Boundary {
-  static width = 60
-  static height = 60
-  constructor({ position }) {
-    this.position = position
-    this.width = 60
-    this.height = 60
-  }
-
-  draw() {
-    c.fillStyle = 'rgba(255, 0, 0, 0.0)'
-    c.fillRect(this.position.x, this.position.y, this.width, this.height)
-  }
-}
-
 const boundaries = []
 const offset = {
   x: -1050,
@@ -48,46 +33,12 @@ c.fillStyle = 'white'
 c.fillRect(0, 0, canvas.width, canvas.height)
 const image = new Image()
 const playerImage = new Image()
+const foregroundImage = new Image()
+
 image.src = './img/Pellet Town.png'
 playerImage.src = './img/playerDown.png'
+foregroundImage.src = './img/Foreground Objects.png'
 
-class Sprite {
-  constructor({
-    position,
-    velocity,
-    image,
-    frames = {
-      max: 1,
-    },
-  }) {
-    this.position = position
-    this.velocity = velocity
-    this.image = image
-    this.frames = frames
-    this.image.onload = () => {
-      this.width = this.image.width / this.frames.max
-      this.height = this.image.height
-    }
-  }
-
-  draw() {
-    c.drawImage(
-      this.image,
-      0,
-      0,
-      this.image.width / this.frames.max,
-      this.image.height,
-      this.position.x,
-      this.position.y,
-      this.image.width / this.frames.max,
-      this.image.height
-    )
-  }
-  m
-}
-
-//
-//
 const player = new Sprite({
   position: {
     x: canvas.width / 2 - 192 / 4 / 2,
@@ -106,6 +57,14 @@ const background = new Sprite({
   image: image,
 })
 
+const foreground = new Sprite({
+  position: {
+    x: offset.x,
+    y: offset.y,
+  },
+  image: foregroundImage,
+})
+
 const keys = {
   w: {
     pressed: false,
@@ -121,7 +80,7 @@ const keys = {
   },
 }
 
-const movables = [background, ...boundaries]
+const movables = [background, foreground, ...boundaries]
 function rectangularCollision({ rectangle1, rectangle2 }) {
   return (
     rectangle1.position.x + rectangle1.width >= rectangle2.position.x &&
@@ -134,10 +93,12 @@ function rectangularCollision({ rectangle1, rectangle2 }) {
 function animate() {
   window.requestAnimationFrame(animate)
   background.draw()
-  player.draw()
+
   boundaries.forEach((boundary) => {
     boundary.draw()
   })
+  player.draw()
+  foreground.draw()
   let moving = true
   const collisionOnMove = (offsetX, offsetY) => {
     for (let i = 0; i < boundaries.length; i++) {
