@@ -32,12 +32,17 @@ console.log(collisionsMap)
 c.fillStyle = 'white'
 c.fillRect(0, 0, canvas.width, canvas.height)
 const image = new Image()
-const playerImage = new Image()
 const playerUpImage = new Image()
+const playerDownImage = new Image()
+const playerLeftImage = new Image()
+const playerRightImage = new Image()
 const foregroundImage = new Image()
 
 image.src = './img/Pellet Town.png'
-playerImage.src = './img/playerDown.png'
+playerDownImage.src = './img/playerDown.png'
+playerUpImage.src = './img/playerUp.png'
+playerLeftImage.src = './img/playerLeft.png'
+playerRightImage.src = './img/playerRight.png'
 foregroundImage.src = './img/Foreground Objects.png'
 
 const player = new Sprite({
@@ -45,9 +50,12 @@ const player = new Sprite({
     x: canvas.width / 2 - 192 / 4 / 2,
     y: canvas.height / 2 - 68 / 2,
   },
-  image: playerImage,
+  image: playerDownImage,
   sprites: {
     up: playerUpImage,
+    left: playerLeftImage,
+    right: playerRightImage,
+    down: playerDownImage,
   },
   frames: {
     max: 4,
@@ -132,18 +140,22 @@ function animate() {
 
   if (keys.w.pressed && lastKey === 'w') {
     player.moving = true
+    player.image = player.sprites.up
     collisionOnMove(0, 3)
     if (moving) movables.forEach((mov) => (mov.position.y += 3))
   } else if (keys.s.pressed && lastKey === 's') {
     player.moving = true
+    player.image = player.sprites.down
     collisionOnMove(0, -3)
     if (moving) movables.forEach((mov) => (mov.position.y -= 3))
   } else if (keys.a.pressed && lastKey === 'a') {
     player.moving = true
+    player.image = player.sprites.left
     collisionOnMove(3, 0)
     if (moving) movables.forEach((mov) => (mov.position.x += 3))
   } else if (keys.d.pressed && lastKey === 'd') {
     player.moving = true
+    player.image = player.sprites.right
     collisionOnMove(-3, 0)
     if (moving) movables.forEach((mov) => (mov.position.x -= 3))
   }
