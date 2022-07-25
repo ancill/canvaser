@@ -33,6 +33,7 @@ c.fillStyle = 'white'
 c.fillRect(0, 0, canvas.width, canvas.height)
 const image = new Image()
 const playerImage = new Image()
+const playerUpImage = new Image()
 const foregroundImage = new Image()
 
 image.src = './img/Pellet Town.png'
@@ -45,6 +46,9 @@ const player = new Sprite({
     y: canvas.height / 2 - 68 / 2,
   },
   image: playerImage,
+  sprites: {
+    up: playerUpImage,
+  },
   frames: {
     max: 4,
   },
@@ -81,6 +85,7 @@ const keys = {
 }
 
 const movables = [background, foreground, ...boundaries]
+
 function rectangularCollision({ rectangle1, rectangle2 }) {
   return (
     rectangle1.position.x + rectangle1.width >= rectangle2.position.x &&
@@ -100,6 +105,7 @@ function animate() {
   player.draw()
   foreground.draw()
   let moving = true
+
   const collisionOnMove = (offsetX, offsetY) => {
     for (let i = 0; i < boundaries.length; i++) {
       const boundary = boundaries[i]
@@ -122,16 +128,22 @@ function animate() {
     }
   }
 
+  player.moving = false
+
   if (keys.w.pressed && lastKey === 'w') {
+    player.moving = true
     collisionOnMove(0, 3)
     if (moving) movables.forEach((mov) => (mov.position.y += 3))
   } else if (keys.s.pressed && lastKey === 's') {
+    player.moving = true
     collisionOnMove(0, -3)
     if (moving) movables.forEach((mov) => (mov.position.y -= 3))
   } else if (keys.a.pressed && lastKey === 'a') {
+    player.moving = true
     collisionOnMove(3, 0)
     if (moving) movables.forEach((mov) => (mov.position.x += 3))
   } else if (keys.d.pressed && lastKey === 'd') {
+    player.moving = true
     collisionOnMove(-3, 0)
     if (moving) movables.forEach((mov) => (mov.position.x -= 3))
   }
