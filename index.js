@@ -8,6 +8,10 @@ const collisionsMap = []
 for (let i = 0; i < collisions.length; i += 70) {
   collisionsMap.push(collisions.slice(i, 70 + i))
 }
+const battleZoneMap = []
+for (let i = 0; i < battleZonesData.length; i += 70) {
+  battleZoneMap.push(battleZonesData.slice(i, 70 + i))
+}
 
 const boundaries = []
 const offset = {
@@ -28,7 +32,23 @@ collisionsMap.forEach((row, i) => {
       )
   })
 })
-console.log(collisionsMap)
+
+const battleZones = []
+battleZoneMap.forEach((row, i) => {
+  row.forEach((symbol, j) => {
+    if (symbol === 1025)
+      battleZones.push(
+        new Boundary({
+          position: {
+            x: j * Boundary.width + offset.x,
+            y: i * Boundary.height + offset.y,
+          },
+        })
+      )
+  })
+})
+console.log(battleZones)
+
 c.fillStyle = 'white'
 c.fillRect(0, 0, canvas.width, canvas.height)
 const image = new Image()
@@ -92,7 +112,7 @@ const keys = {
   },
 }
 
-const movables = [background, foreground, ...boundaries]
+const movables = [background, foreground, ...battleZones, ...boundaries]
 
 function rectangularCollision({ rectangle1, rectangle2 }) {
   return (
@@ -105,18 +125,16 @@ function rectangularCollision({ rectangle1, rectangle2 }) {
 
 function animate() {
   window.requestAnimationFrame(animate)
-  background.draw()
 
-  boundaries.forEach((boundary) => {
-    boundary.draw()
-  })
+  background.draw()
+  boundaries.forEach((boundary) => boundary.draw())
+  battleZones.forEach((zone) => zone.draw())
   player.draw()
   foreground.draw()
-  let moving = true
 
-  const collisionOnMove = (offsetX, offsetY) => {
-    for (let i = 0; i < boundaries.length; i++) {
-      const boundary = boundaries[i]
+  const collisionOnMove = ({ offsetX, offsetY, boundarieObject }) => {
+    for (let i = 0; i < boundarieObject.length; i++) {
+      const boundary = boundarieObject[i]
       if (
         rectangularCollision({
           rectangle1: player,
@@ -135,28 +153,58 @@ function animate() {
       }
     }
   }
+  // пересмотреть  https://chriscourses.com/courses/pokemon/videos/battle-activation
+  if (keys.w.pressed || keys.a.pressed || keys.s.pressed || keys.d.pressed) {
+    for (let i = 0; i < battleZones.length; i++) {
+      const boundary = battleZones[i]
+      const overlappingArea =
+        (Math.min(
+          player.position.x + player.width,
+          boundary.position.x + boundary.width
+        ) -
+          Math.max(player.position.x, boundary.width)) *
+        (Math.min(
+          player.position.y + player.height,
+          boundary.position.y + boundary.height
+        ) -
+          Math.max(player.position.y, boundary.position.y))
 
+      if (
+        rectangularCollision({
+          rectangle1: player,
+          rectangle2: boundary,
+        }) &&
+        overlappingArea > (player.width & player.height) / 2
+      ) {
+        console.log('coll')
+
+        break
+      }
+    }
+  }
+
+  let moving = true
   player.moving = false
 
   if (keys.w.pressed && lastKey === 'w') {
     player.moving = true
     player.image = player.sprites.up
-    collisionOnMove(0, 3)
+    collisionOnMove({ offsetX: 0, offsetY: 3, boundarieObject: boundaries })
     if (moving) movables.forEach((mov) => (mov.position.y += 3))
   } else if (keys.s.pressed && lastKey === 's') {
     player.moving = true
     player.image = player.sprites.down
-    collisionOnMove(0, -3)
+    collisionOnMove({ offsetX: 0, offsetY: -3, boundarieObject: boundaries })
     if (moving) movables.forEach((mov) => (mov.position.y -= 3))
   } else if (keys.a.pressed && lastKey === 'a') {
     player.moving = true
     player.image = player.sprites.left
-    collisionOnMove(3, 0)
+    collisionOnMove({ offsetX: 3, offsetY: 0, boundarieObject: boundaries })
     if (moving) movables.forEach((mov) => (mov.position.x += 3))
   } else if (keys.d.pressed && lastKey === 'd') {
     player.moving = true
     player.image = player.sprites.right
-    collisionOnMove(-3, 0)
+    collisionOnMove({ offsetX: -3, offsetY: 0, boundarieObject: boundaries })
     if (moving) movables.forEach((mov) => (mov.position.x -= 3))
   }
 }
